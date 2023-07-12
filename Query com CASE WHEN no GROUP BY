@@ -1,0 +1,24 @@
+select case
+          When Upper(a.modalidade) like 'CRÉDITO DESCENTRALIZADO'     then 'Financiamento reembolsável'
+          When Upper(a.modalidade) like 'CRÉDITO DIRETO'              then 'Financiamento reembolsável'
+          When Upper(a.modalidade) like 'NÃO REEMBOLSÁVEL A EMPRESAS' then 'Financiamento não reembolsável'
+          When Upper(a.modalidade) like 'SUBVENÇÃO DIRETA'            then 'Financiamento não reembolsável'
+            else
+              'Investimento'
+            end "Modalidade",
+
+UPPER(a.secao), UPPER(a.divisao), to_char(a.dtpagamento,'yyyy') as "Ano", sum(a.vlliberado) as "Total"
+
+from v_sic_01233000131202311 a
+where a.modalidade IN ('Crédito Direto', 'Crédito Descentralizado','Não Reembolsável a Empresas' , 'Subvenção Direta', 'Investimento') and
+to_char(a.dtpagamento,'yyyy') <= '2022' and to_char(a.dtpagamento,'yyyy') >= '2000'
+
+group by case
+          When Upper(a.modalidade) like 'CRÉDITO DESCENTRALIZADO'     then 'Financiamento reembolsável'
+          When Upper(a.modalidade) like 'CRÉDITO DIRETO'              then 'Financiamento reembolsável'
+          When Upper(a.modalidade) like 'NÃO REEMBOLSÁVEL A EMPRESAS' then 'Financiamento não reembolsável'
+          When Upper(a.modalidade) like 'SUBVENÇÃO DIRETA'            then 'Financiamento não reembolsável'
+            else
+              'Investimento'
+            end, UPPER(a.secao), UPPER(a.divisao), to_char(a.dtpagamento,'yyyy')
+order by 1, 2, 3, 4
