@@ -171,19 +171,19 @@ left join ( select pj.nrpessoa, coalesce(cnae2primario, cnae2secundario, cnae1) 
               on cnae1.nrpessoa = pj.nrpessoa) cnae
   on cnae.nrpessoa = app.nrpessoa
 
--- sandro : Tipo de Demanda
+--  Tipo de Demanda
 inner join tipo_demanda td
 on td.cdtipodemanda = d.cdtipodemanda
 
--- sandro (CNAE)
+--  (CNAE)
 left join pessoa_juridica_dados_receita pjdr
 on pjdr.cnpj = formata_cnpj(app.nrcnpj)
 
--- sandro (CNAE-Executor)
+-- (CNAE-Executor)
 left join pessoa_juridica_dados_receita pjdr_exe
 on pjdr_exe.cnpj = formata_cnpj(ape.nrcnpj)
 
--- sandro (PORTE)
+-- (PORTE)
 inner join pessoa_juridica pj
 on pj.nrpessoa = app.nrpessoa
 
