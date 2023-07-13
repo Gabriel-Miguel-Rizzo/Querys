@@ -1,5 +1,5 @@
 select formata_ref(p.nrreferencia) as "Ref.",
-       mp.modalidade as "Instrumento",                              -- Não sei se desejam o audiovisual (pode ser feito um case/when para transformálo em N. Reembolsável) 
+       mp.modalidade as "Instrumento",                                                                                                -- Não sei se desejam o audiovisual (pode ser feito um case/when para transformálo em N. Reembolsável) 
        case 
          when mp.modalidade in ('Subvenção') then 'Não Reembolsável' 
          else mp.modalidade
@@ -29,15 +29,15 @@ select formata_ref(p.nrreferencia) as "Ref.",
 /*     -- pode existir mais de um interveniente - tem que ser uma tabela separada - outro SQL 
         api.nmpessoa as "Interveniente",                                     
        formata_cnpj(api.nrcnpj) as "CNPJ Interveniente",                               
-       NULL as "CNAE Interveniente",                                -- Informações Cnae Interveniente (Não Encontrado)
-       NULL as "Porte Interveniente",                               -- Informações Porte Interveniente (Não Encontrado)
+       NULL as "CNAE Interveniente",                                                        -- Informações Cnae Interveniente (Não Encontrado)
+       NULL as "Porte Interveniente",                                                       -- Informações Porte Interveniente (Não Encontrado)
        api.sguf as "UF Interveniente",                                  
        api.nmmunicipio as "Município  Interveniente",                          
        api.dsregiao as "Região Interveniente",                              
 */       ape.nmpessoa as "Executor",                                  
        formata_cnpj(ape.nrcnpj) as "CNPJ Executor",                               
-       /*NULL*/pjdr_exe.cnae_principal as "CNAE Executor",                                     -- Informações Cnae Executor (Não Encontrado)
-       /*NULL*/nvl(FXPORTE_EXE.DS_PORTE,'Não informado') as "Porte Executor",                  -- Informações Porte Executor (Não Encontrado)
+       /*NULL*/pjdr_exe.cnae_principal as "CNAE Executor",                                   -- Informações Cnae Executor (Não Encontrado)
+       /*NULL*/nvl(FXPORTE_EXE.DS_PORTE,'Não informado') as "Porte Executor",                -- Informações Porte Executor (Não Encontrado)
        ape.sguf as "UF executor",                                   
        ape.nmmunicipio as "Município  executor",                    
        ape.dsregiao as "Região executor" ,                          
@@ -48,17 +48,18 @@ select formata_ref(p.nrreferencia) as "Ref.",
        dfp.contrapartidanaofinanceira as "Contrapartida Não-Financeira" ,
        cnae.cnae as "CNAE Projeto" ,
        -- um projeto não reembolsável possui mais de uma área de conhecimento. Outro SQL
-/*       NULL as "Area Conhecimento Projeto",                          --(Não Encontrado)
+/*       NULL as "Area Conhecimento Projeto",                                               --(Não Encontrado)
 */       
        p.dsobjetivoprojeto as "Objetivo Geral do Projeto",                          
-       --NULL as "Descrição do Projeto",                               --(Não Encontrado) "Não temos esta informação"
-       --NULL as "Área geográfica de execução",                        --(Não Encontrado) "Não temos esta informação"
+       --NULL as "Descrição do Projeto",                                                    --(Não Encontrado) "Não temos esta informação"
+       --NULL as "Área geográfica de execução",                                             --(Não Encontrado) "Não temos esta informação"
        -- um projeto reembolsável possui mais de uma Linha de Crédito. Outro SQL
-       --NULL as "Linhas de Crédito",                                  --(Linhas de crédito nao existem para não reembolsável)(Nulo)
+       --NULL as "Linhas de Crédito",                                                       --(Linhas de crédito nao existem para não reembolsável)(Nulo)
        palavra_chave_projeto(p.cdprojeto,p.nrversao, 1) as "Palavra Chave 1",
        palavra_chave_projeto(p.cdprojeto,p.nrversao, 2) as "Palavra Chave 2",
        palavra_chave_projeto(p.cdprojeto,p.nrversao, 3) as "Palavra Chave 3"
        
+
 
 from v_dados_projeto p
 
