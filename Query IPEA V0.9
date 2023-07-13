@@ -1,5 +1,5 @@
 select formata_ref(p.nrreferencia) as "Ref.",
-       mp.modalidade as "Instrumento",                                                                                                -- Não sei se desejam o audiovisual (pode ser feito um case/when para transformálo em N. Reembolsável) 
+       mp.modalidade as "Instrumento",                                                                                              
        case 
          when mp.modalidade in ('Subvenção') then 'Não Reembolsável' 
          else mp.modalidade
