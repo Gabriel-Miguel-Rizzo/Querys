@@ -1,0 +1,211 @@
+drop  Table TEMP_SIC_01217003635202218_vac 
+Create Table TEMP_SIC_01217003635202218_vac as 
+SELECT "Instrumento",
+        "Ref",
+        "Proponente",
+        "Executor",
+        "Edital",
+        "Título" "Título do Projeto",
+        "Objetivo",
+        "Pal. Chave 1",
+        "Pal. Chave 2",
+        "Pal. Chave 3",
+        "Valor Finep",
+        "Data de Assinatura",
+        "Executor" "Doença"
+FROM 
+(
+select  case
+          when d.cdtipofundo = 24 then 'Subvenção'
+          when d.cdtipodemanda in (3,39) then 'Crédito'
+          when d.cdtipofundo = 25 then 'Ancine'
+          else 'Não reembolsável'
+        end "Instrumento",
+        app.nmpessoa "Proponente",
+        ape.nmpessoa "Executor",
+        concatena_co_executor(p.cdprojeto,p.nrversao) "Co-executor(es)",
+        concatena_interveniente(p.cdprojeto,p.nrversao) "Interveniente(s)",
+        d.nmdemanda "Edital",
+        p.dstituloprojeto "Título",
+        formata_ref(p.nrreferencia) "Ref",
+        objetivo "Objetivo",
+        UPPER(palavra_chave_projeto(p.cdprojeto,p.nrversao, 1)) "Pal. Chave 1",
+        UPPER(palavra_chave_projeto(p.cdprojeto,p.nrversao, 2)) "Pal. Chave 2",
+        UPPER(palavra_chave_projeto(p.cdprojeto,p.nrversao, 3)) "Pal. Chave 3",
+        vap.valor_finep "Valor Finep",
+        c.total_pago "Valor Pago",
+        analise.projeto_ativo(p.cdprojeto,p.nrversao) "Status",
+        C.DTASSINATURA "Data de Assinatura"
+from projeto p
+
+inner join contrato c
+on p.cdprojeto = c.cdprojeto
+and c.status = 'A'
+
+inner join demanda d
+on d.iddemanda = p.iddemanda
+
+inner join v_valor_finep_atual_projeto vap
+on vap.cdprojeto = p.cdprojeto
+and vap.nrversao = p.nrversao
+
+left join (select drf.cdprojeto, 
+                  drf.nrversao,
+                  sum(drf.total_pago) total_pago
+             from dagi_relatorio_fundos drf
+             group by drf.cdprojeto, 
+                  drf.nrversao
+            ) c
+on c.cdprojeto = p.cdprojeto
+and c.nrversao = p.nrversao
+            
+inner join v_associa_pessoa_projeto app
+on app.cdprojeto = p.cdprojeto
+and app.nrversao = p.nrversao
+and app.cdparticipacao = 1
+
+inner join v_associa_pessoa_projeto ape
+on ape.cdprojeto = p.cdprojeto
+and ape.nrversao = p.nrversao
+and ape.cdparticipacao = 2
+
+  left join
+ (select ctp.cdprojeto,ctp.nrversao,ctp.iddemanda,dbms_lob.substr(ctp.clcampo,4000)objetivo
+            from campos_txt_proj ctp
+            inner join tipos_campos_texto tcp
+            on tcp.iddemanda = ctp.iddemanda
+            and tcp.cdcampotexto = ctp.cdcampo
+            and tcp.dscampotexto like 'Objetivo Geral%'
+            where ctp.cdseqitem = (select max(cdseqitem) from campos_txt_proj ctp2
+                                   where ctp2.nrversao = ctp.nrversao
+                                   and ctp2.cdprojeto = ctp.cdprojeto
+                                   and ctp2.cdcampo = ctp.cdcampo)
+            group by ctp.cdprojeto,ctp.nrversao,ctp.iddemanda,dbms_lob.substr(ctp.clcampo,4000)
+                      )ctp
+             on ctp.cdprojeto = p.cdprojeto
+             and ctp.nrversao = p.nrversao
+             and ctp.iddemanda = p.iddemanda
+
+
+where upper(objetivo)  LIKE '%VACINA%'
+OR upper(objetivo)  LIKE '%IMUNIZA%'
+
+or upper(p.dstituloprojeto)  LIKE '%VACINA%'
+or upper(p.dstituloprojeto)  LIKE '%IMUNIZA%'
+
+OR UPPER(palavra_chave_projeto(p.cdprojeto,p.nrversao, 1)) LIKE '%VACINA%'
+OR UPPER(palavra_chave_projeto(p.cdprojeto,p.nrversao, 2)) LIKE '%VACINA%'
+OR UPPER(palavra_chave_projeto(p.cdprojeto,p.nrversao, 3)) LIKE '%VACINA%'
+
+OR UPPER(palavra_chave_projeto(p.cdprojeto,p.nrversao, 1)) LIKE '%IMUNIZA%'
+OR UPPER(palavra_chave_projeto(p.cdprojeto,p.nrversao, 2)) LIKE '%IMUNIZA%'
+OR UPPER(palavra_chave_projeto(p.cdprojeto,p.nrversao, 3)) LIKE '%IMUNIZA%'
+
+union
+
+select 'Crédito',
+       c.prop_razao_social,
+       c.prop_razao_social,
+       null,
+       null,
+       b.produto,
+       b.dstitulo_projeto,
+       b.ref,
+       b.dsobjetivo,
+       null,
+       null,
+       null,
+       a.valor_finep,
+       a.total_pago,
+       b.status,
+       b.dtassinatura
+       
+ from t_dplan_binovo_fato_inovacao a
+
+ inner join  t_dplan_binovo_dim_projeto b
+ on a.ref = b.ref
+ and a.data_cpsf = b.data_cpsf
+ and a.cdcontratofinep = b.cdcontratofinep
+
+ inner join  t_dplan_binovo_dim_empresa c
+ on a.ref = c.ref
+ and a.prop_cnpj = c.prop_cnpj
+
+
+where b.flag_opcao_visao3 = 'Sim'
+and (upper(b.dsobjetivo)  LIKE '%VACINA%'
+or upper(b.dstitulo_projeto)  LIKE '%VACINA%'
+or upper(b.dsobjetivo)  LIKE '%IMUNIZA%'
+or upper(b.dstitulo_projeto)  LIKE '%IMUNIZA%'
+)
+)
+WHERE NOT "Objetivo" like '%COVID%' AND NOT "Objetivo" like '%SARS%' -- Exceto COVID
+AND UPPER("Status") NOT IN ('CANCELADO','INDEFERIDO')
+AND "Ref" not in (
+'335838','2018003800','0027/14','0042/09','0045/14','0104/13','0412/07','0515/07',
+'0603/11','0644/06','0726/09','0734/20','1323/10','1566/02','1607/03','2059/04',
+'2141/04','2210/07','2905/04','3692/04','Fomento/CCB/INOVACRED/2/2017','PR-50197',
+'2007/03''3888/06''1135/06''0326/07'
+) -- vacina animal
+--and "Data de Assinatura" > '01/01/2012' -- ultimos 10 anos
+order by "Data de Assinatura"
+
+-- inserção manual do campo "Doença"
+select * from TEMP_SIC_01217003635202218_vac for update
+commit
+
+
+
+-- tabela temporária com os dados do orçamento
+
+drop table TEMP_SIC_01217003635202218_orc
+create table  TEMP_SIC_01217003635202218_orc
+(
+AnoORC number,
+ReferênciaPROJ varchar2(20),
+ConvênioPROJ varchar2(200),
+DeptoPROJ  varchar2(10),
+DemandaPROJ  varchar2(200),
+ProponentePROJ  varchar2(200),
+TítuloPROJ varchar2(200),
+UFPROJ  varchar2(3),
+IdentificaçãoAÇÃO varchar2(50),
+PTRESNE  varchar2(20),
+SomaDeSomaDeValorNE  number,
+SomaDeSomaDeValorOB  number,
+Resto  varchar2(5),
+Tipo  varchar2(5),
+NaturezaPROJ varchar2(30)
+)
+
+select * from TEMP_SIC_01217003635202218_orc where 1=0 for update
+rollback
+commit
+
+-- SQL de resposta
+
+select "Ano","Doença","Total Empenhado","Total Realizado"
+from (
+    select orc.anoorc "Ano",
+           vac."Doença",
+           nvl(sum(orc.somadesomadevalorne),0) "Total Empenhado",
+           nvl(sum(orc.somadesomadevalorob),0) "Total Realizado"
+    from TEMP_SIC_01217003635202218_vac vac
+    inner join TEMP_SIC_01217003635202218_orc orc
+    on orc.referênciaproj = vac."Ref"
+    where vac."Instrumento" <> 'Crédito'
+    group by orc.anoorc,vac."Doença"
+    union
+    select to_number(to_char(fl.dtliberacao,'yyyy')),
+           vac."Doença",
+           nvl(sum(fl.vlliberacao),0),
+           nvl(sum(fl.vlliberacao),0)
+    from TEMP_SIC_01217003635202218_vac vac
+    inner join t_dplan_binovo_fato_liberacao fl
+    on vac."Ref" = fl.ref
+    where vac."Instrumento" <> 'Crédito'
+    group by to_char(fl.dtliberacao,'yyyy'),
+           vac."Doença"
+)
+where "Total Empenhado" > 0 
+order by 1,2
