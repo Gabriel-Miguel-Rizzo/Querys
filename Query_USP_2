@@ -1,0 +1,38 @@
+select to_char(t.dtpagamento,'yyyy') "Ano   ", substr(area.dsitemclasprojeto,1,12) "Area de Projeto" ,sum(t.valor_pago) "Total Pago"
+from t_DPLAN_TUDAO_LIB_INTRANET t
+
+inner join projeto p
+on t.refe = formata_ref(p.nrreferencia)
+
+inner join
+(
+      select acp.cdprojeto , acp.nrversao, icp.dsitemclasprojeto
+      from associa_classif_projeto acp
+      inner join item_classif_projeto icp
+      on icp.cdclassprojeto = acp.cdclassprojeto
+      and icp.nritemclasprojeto = acp.nritemclasprojeto
+      where acp.cdclassprojeto = 2
+) area
+on area.cdprojeto = p.cdprojeto
+and area.nrversao = p.nrversao
+
+where substr(area.dsitemclasprojeto,1,12) in (
+       '3.04.04.01-0' , 
+       '3.04.04.02-9' , 
+       '3.04.04.03-7' , 
+       '3.04.04.04-5' , 
+       '3.04.04.05-3' ,
+       '3.04.04.06-1' ,
+       '3.04.05.02-5' ,
+       '3.04.05.03-3' ,
+       '3.04.06.01-3' ,
+       '3.04.06.03-0' ,
+       '3.05.02.02-0' ,
+       '3.05.02.03-9' ,
+       '3.05.04.08-2' ,
+       '3.06.03.01-3' ,
+       '5.02.06.00-1' )
+
+group by to_char(t.dtpagamento,'yyyy'), substr(area.dsitemclasprojeto,1,12)
+
+order by 1,2
