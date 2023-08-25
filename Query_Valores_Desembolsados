@@ -1,0 +1,119 @@
+select t.modalidade, t.dtpagamento , t.vlliberado,
+
+case when pjdr.cnae_principal is not null then sec.cdsecao || ' - ' || get_info_cnae2(pjdr.cnae_principal,'SECAO') else 'Z - Não informado' end secao,
+case when pjdr.cnae_principal is not null then substr(pjdr.cnae_principal,1,2) || ' - ' || get_info_cnae2(pjdr.cnae_principal,'DIVISAO') else '99 - Não informado' end divisao
+
+from t_dplan_tudao_lib t
+
+left join pessoa_juridica_dados_receita pjdr
+on pjdr.cnpj = t.cnpjproponente
+
+-- SECAO (CNAE)
+LEFT JOIN
+(
+SELECT  DISTINCT s.cdsecao, secao.dsdenominacao , s.cddivisao
+
+from TAB_ESTRUT_CNAE20 S
+
+inner join
+(
+  select t.cdsecao, t.dsdenominacao
+  from TAB_ESTRUT_CNAE20 t
+  WHERE T.CDGRUPO IS  NULL
+  AND T.CDDIVISAO IS  NULL
+  ) secao
+on secao.cdsecao = s.cdsecao
+
+inner join
+(
+  select t.cddivisao , t.dsdenominacao
+  from TAB_ESTRUT_CNAE20 t
+  WHERE T.CDGRUPO IS  NULL
+  AND T.CDDIVISAO IS not  NULL
+  ) divisao
+on divisao.cddivisao = s.cddivisao
+where s.CDGRUPO is not null
+) sec
+on to_number(sec.cddivisao) = to_number(substr(pjdr.cnae_principal,1,2))
+
+where t.modalidade in (/*'Crédito Descentralizado',*/'Crédito Direto','Subvenção Direta','Não Reembolsável a Empresas')
+
+union -- inovacred
+
+ select 'Crédito Descentralizado',
+        trunc(a.dtliberacao),
+        a.vlliberacao,
+        c.cnae_secao_emp,
+        c.cnae_divisao_emp 
+ from t_dplan_binovo_fato_liberacao a
+
+ inner join  t_dplan_binovo_dim_projeto b
+ on a.ref = b.ref
+ and a.data_cpsf = b.data_cpsf
+ and a.cdcontratofinep = b.cdcontratofinep
+
+ inner join  t_dplan_binovo_dim_empresa c
+ on a.ref = c.ref
+ and a.prop_cnpj = c.prop_cnpj
+ and a.data_cpsf = c.data_cpsf
+ 
+ where a.flag_opcao_visao4 = 'Sim'
+
+union -- SCI (liberações a partir de 2000 até 
+
+
+select 'Crédito Direto', 
+        w.dtpagamento, 
+        w.vlrealizado,
+        case when pjdr.cnae_principal is not null then sec.cdsecao || ' - ' || get_info_cnae2(pjdr.cnae_principal,'SECAO') else 'Z - Não informado' end secao,
+        case when pjdr.cnae_principal is not null then substr(pjdr.cnae_principal,1,2) || ' - ' || get_info_cnae2(pjdr.cnae_principal,'DIVISAO') else '99 - Não informado' end divisao
+  
+  from migracao.v_liberacoes_pagas w
+  
+  inner join migracao.v_dados_projeto vdp
+  on vdp.cdprojeto = w.cdprojeto
+  and vdp.nrversao = w.nrversao
+  
+  inner join migracao.v_associa_pessoa_projeto app
+  on app.cdprojeto = w.cdprojeto
+  and app.nrversao = w.nrversao
+  and app.cdparticipacao = 1
+  
+  left join pessoa_juridica_dados_receita pjdr
+  on pjdr.cnpj = formata_cnpj(app.nrcnpj)  
+ 
+  -- SECAO (CNAE)
+  LEFT JOIN
+  (
+  SELECT  DISTINCT s.cdsecao, secao.dsdenominacao , s.cddivisao
+
+  from TAB_ESTRUT_CNAE20 S
+
+  inner join
+  (
+    select t.cdsecao, t.dsdenominacao
+    from TAB_ESTRUT_CNAE20 t
+    WHERE T.CDGRUPO IS  NULL
+    AND T.CDDIVISAO IS  NULL
+    ) secao
+  on secao.cdsecao = s.cdsecao
+
+  inner join
+  (
+    select t.cddivisao , t.dsdenominacao
+    from TAB_ESTRUT_CNAE20 t
+    WHERE T.CDGRUPO IS  NULL
+    AND T.CDDIVISAO IS not  NULL
+    ) divisao
+  on divisao.cddivisao = s.cddivisao
+  where s.CDGRUPO is not null
+  ) sec
+  on to_number(sec.cddivisao) = to_number(substr(pjdr.cnae_principal,1,2))  
+  
+  where app.nrcnpj is not null
+  and length(rtrim(ltrim(app.nrcnpj))) = 14
+  and w.dtpagamento > '01/01/2000'
+  and vdp.dsmodalidade = 'REEMBOLSAVEL'
+  and not app.nmpessoa like '%FUNDO%'
+  and app.nrpessoa not in ('95842000','A4677000')
+  
