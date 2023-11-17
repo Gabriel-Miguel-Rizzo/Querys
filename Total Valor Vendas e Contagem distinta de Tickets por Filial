@@ -1,6 +1,6 @@
-SELECT SUM(lvp.VALOR_TOTAL) as Total_Valor_Vendas, COUNT(DISTINCT lv.TICKET) as Tickets_únicos
+SELECT SUM(lvp.VALOR_TOTAL) as Total_Valor_Vendas, COUNT(DISTINCT lv.TICKET + lvp.CODIGO_FILIAL) as Tickets_Únicos_Por_Filial
 
---Total Valor Vendas e Contagem distinta de Tickets filtrados pelos filtros:
+--Total Valor Vendas e Contagem distinta de Tickets das filiais filtrados pelos filtros:
 /*
 
 * Griffe é OH BOY                         ,       
