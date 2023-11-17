@@ -1,0 +1,29 @@
+SELECT SUM(lvp.VALOR_TOTAL), COUNT(DISTINCT lv.TICKET)
+
+--Total Valor Vendas e Contagem distinta de Tickets filtrados pelos filtros:
+/*
+
+* Griffe é OH BOY                         ,       
+* Coleção é Primavera 24 ou Verão 24      ,  
+* Ano da data da venda é 2023             ,
+* Mês da data da venda é outubro          ,
+
+*/
+
+FROM LOJA_VENDA lv
+
+INNER JOIN LOJA_VENDA_PRODUTO lvp ON
+lv.CODIGO_FILIAL = lvp.CODIGO_FILIAL AND
+lv.TICKET = lvp.TICKET AND
+lv.DATA_VENDA = lvp.DATA_VENDA
+
+INNER JOIN PRODUTOS p ON
+lvp.PRODUTO = p.PRODUTO
+
+WHERE
+lvp.QTDE > 0 AND
+
+p.GRIFFE  like 'OH BOY'                AND
+p.COLECAO IN('prim24', 'ver24')        AND
+YEAR(lvp.DATA_VENDA)    = 2023         AND
+MONTH(lvp.DATA_VENDA)   = 10
