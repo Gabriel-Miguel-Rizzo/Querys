@@ -1,4 +1,4 @@
-SELECT SUM(lvp.VALOR_TOTAL), COUNT(DISTINCT lv.TICKET)
+SELECT SUM(lvp.VALOR_TOTAL) as Total_do_Valor_Vendas, COUNT(DISTINCT lv.TICKET) as Tickets_únicos
 
 --Total Valor Vendas e Contagem distinta de Tickets filtrados pelos filtros:
 /*
