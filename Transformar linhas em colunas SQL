@@ -1,5 +1,11 @@
 ----- DICA GERAL NR 1 (TRANSFORMAR LINHAS EM COLUNAS NO SQL) ------
 
+*** Usar o case when dentro do agrupamento MAX() para criar novas colunas com base as informações das linhas
+EX:
+
+
+
+
 SELECT TAB.CODIGO  , tab.TOTAL_OHBOY Total_OHBOY, tab.TOTAL_YOBOH Total_YOBOH,(TAB.TOTAL_OHBOY + TAB.TOTAL_YOBOH)  Total_Geral,
 CASE
 WHEN  (TAB.TOTAL_YOBOH + TAB.TOTAL_OHBOY) <> 0  THEN                 
