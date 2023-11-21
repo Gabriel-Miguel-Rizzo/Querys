@@ -4,6 +4,52 @@ EXISTEM 2 MANEIRAS:
 *** Usar o case when dentro do agrupamento MAX() para criar novas colunas com base as informações das linhas
 *** Usar a função PIVOT do SQL 
 
+Exemplos Resumidos:
+
+--PIVOT --
+SELECT
+    ID,
+    MAX(CASE WHEN Tipo = 'A' THEN Valor END) AS A,
+    MAX(CASE WHEN Tipo = 'B' THEN Valor END) AS B,
+    MAX(CASE WHEN Tipo = 'C' THEN Valor END) AS C
+FROM SuaTabela
+GROUP BY ID; 
+
+
+--UNPIVOT---
+SELECT ID, 'A' AS Tipo, A AS Valor FROM TabelaPivotada
+UNION
+SELECT ID, 'B' AS Tipo, B AS Valor FROM TabelaPivotada
+UNION
+SELECT ID, 'C' AS Tipo, C AS Valor FROM TabelaPivotada;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 EX de case when + MAX() :
 
