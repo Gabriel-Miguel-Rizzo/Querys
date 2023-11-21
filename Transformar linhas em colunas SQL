@@ -1,7 +1,11 @@
 ----- DICA GERAL NR 1 (TRANSFORMAR LINHAS EM COLUNAS NO SQL) ------
 
+EXISTEM 2 MANEIRAS:
 *** Usar o case when dentro do agrupamento MAX() para criar novas colunas com base as informações das linhas
-EX:
+*** Usar a função PIVOT do SQL 
+
+
+EX de case when + MAX() :
 
 
 
